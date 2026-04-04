@@ -177,7 +177,7 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-int a[100001];
+int a[100001], nxt[100001];
 int dp[2][361][361];
 int pre[2][361][361];
 void solve()
@@ -185,22 +185,34 @@ void solve()
 	int n, k;
 	cin >> n >> k;
 	for (int i = 1; i <= n; i++) cin >> a[i];
-	for (int i = 0; i <= k; i++) for (int j = 0; j <= k; j++) dp[0][i][j] = dp[1][i][j] = -1e8, pre[0][i][j] = pre[1][i][j] = 0;
+	for (int i = 0; i <= k; i++) for (int j = 0; j <= k; j++) dp[0][i][j] = dp[1][i][j] = pre[0][i][j] = pre[1][i][j] = -1e8;
 	int c = 0;
-	bool cd = 0;
-	dp[0][0][0] = pre[0][0][0] = 0;
+	vector <int> use;
 	for (int i = 1; i <= n; i++)
 	{
 		if (a[i] <= c) continue;
 		c = a[i];
+		use.pb(i);
+	}
+	if (!use.size()) 
+	{
+		cout << 0 << endl;
+		return;
+	}
+	nxt[0] = use[0];
+	for (int i = 0; i < use.size() - 1; i++) nxt[use[i]] = use[i + 1];
+	bool cd = 0;
+	dp[0][0][0] = pre[0][0][0] = 0;
+	for (int i = 1; i <= k; i++) pre[0][0][i] = 0;
+	for (auto i : use)
+	{
 		cd ^= 1;
 		for (int s = 0; s <= k; s++) for (int j = 0; j <= k; j++) dp[cd][s][j] = dp[cd ^ 1][s][j]; 
 		for (int j = 1; j <= a[i]; j++)
 		{
 			for (int s = j; s <= k; s++)
 			{
-				int las = pre[cd ^ 1][s - j][j - 1];
-				dp[cd][s][j] = max(dp[cd ^ 1][s][j], dp[cd ^ 1][s - j][las] + (j - las) * (n - i + 1));
+				dp[cd][s][j] = max(dp[cd ^ 1][s][j], pre[cd ^ 1][s - j][j - 1] + j * (n - i + 1));
 				// cerr << i << ' ' << s << ' ' << j << ' ' << dp[cd][s][j] << endl;
 			}
 		}
@@ -210,8 +222,7 @@ void solve()
 			for (int j = 1; j <= k; j++) 
 			{
 				pre[cd][s][j] = pre[cd][s][j - 1];
-				int las = pre[cd][s][j];
-				if (dp[cd][s][j] > dp[cd][s][pre[cd][s][j]]) pre[cd][s][j] = j;
+				if (dp[cd][s][j] - j * (n - nxt[i] + 1) > pre[cd][s][j]) pre[cd][s][j] = dp[cd][s][j] - j * (n - nxt[i] + 1);
 			}
 		}
 	}
