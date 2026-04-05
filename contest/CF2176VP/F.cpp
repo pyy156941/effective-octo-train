@@ -186,6 +186,7 @@ int num[N];
 void sieve(int n)
 {
 	mu[1] = 1;
+	num[1] = 0;
 	for (int i = 2; i <= n; i++)
 	{
 		if (!nprime[i]) 
@@ -210,43 +211,44 @@ void sieve(int n)
 	}
 }
 
-int a[200001], cnt[200001], ac[200001];
-int jc[200001];
-ll sum[200001];
+int a[200001], cnt[200001];
+int tc[200001][15];
+ll sum[200001][15];
+
+constexpr ll mod = 998244353;
 void solve()
 {
-	int n, k;
-	multi_read(n, k);
-	prime.clear()
+	int n, p;
+	multi_read(n, p);
+	prime.clear();
 	sieve(n);
-	for (int i = 1; i <= n; i++) cnt[i] = ac[i] = jc[i] = sum[i] = 0;
+	for (int i = 1; i <= n; i++) cnt[i] = a[i] = 0;
+	for (int i = 1; i <= n; i++) for (int j = 0; j <= 14; j++) tc[i][j] = sum[i][j] = 0;
 	for (int i = 1; i <= n; i++) cin >> a[i], cnt[a[i]]++;	
-	int tc[10];
+	for (int i = 1; i <= n; i++) for (int j = i; j <= n; j += i) tc[i][num[j]] += cnt[j]; 
 	for (int i = 1; i <= n; i++)
 	{
-		if (mu[i] == 0) continue;
-		for (int j = i; j <= n; j += i) jc[i] += (ll)cnt[j]; 
-		sum[i] = jc[i];
-		sum[i] *= sum[i] - 1ll;
-		sum[i] /= 2ll;
-	}
-	for (auto p : prime)
-	{
-		for (int i = 1; i <= n / p; i++)
+		for (int j = 0; j <= 14; j++)
 		{
-			if (mu[i * p] == 0) continue;
-			jc[i] -= jc[i * p];
-			sum[i] -= sum[i * p];
+			for (int k = 0; k <= j / 2; k++) 
+			{
+				if (k != j - k) sum[i][j] += (ll)tc[i][k] * tc[i][j - k]; 
+				else sum[i][j] += (ll)tc[i][k] * (tc[i][k] - 1) / 2;
+			}
 		}
 	}
-	for (int i = 1; i <= n; i++)
+	ll ans = 0;
+	for (int i = n; i >= 1; i--)
 	{
-		if (mu[i] == 0) continue;
-		for (int j = i; j <= n; j += i) 
+		for (int j = i * 2; j <= n; j += i) 
 		{
-			if (!cnt[j]) continue;
+			for (int k = 0; k <= 14; k++) sum[i][k] -= sum[j][k];
 		}
+		for (int j = 0; j <= 14; j++) sum[i][j] %= mod;
+		for (int j = 0; j <= 14; j++) ans = (ans + sum[i][j] * qpow((ll)j - num[i], (ll)p, mod) % mod) % mod;
 	}
+	cout << ans << endl;
+	return;
 }
 
 int main()
