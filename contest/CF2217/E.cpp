@@ -177,36 +177,40 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-int p[5001], q[5001], d[5001];
-bool occ[5001];
+int p[5001], pq[5001], q[5001], d[5001], pl[5001];
 void solve()
 {
 	int n;
 	cin >> n;
-	for (int i = 1; i <= n; i++) cin >> p[i], occ[i] = false;
+	for (int i = 1; i <= n; i++) cin >> p[i], pl[p[i]] = i, pq[i] = 0;
 	for (int i = 1; i <= n; i++) cin >> d[i];
-	for (int i = 1; i <= n; i++)
+	for (int i = n; i >= 1; i--)
 	{
-		int l = 0;
-		for (int j = i + 1; j <= n; j++)
-		{
-			if (p[j] > p[i]) l++;
-		}
-		if (l < d[i]) 
+		int cur = pl[i], l = 0;
+		for (int j = cur + 1; j <= n; j++) if (p[j] > p[cur]) l++;
+		if (l < d[cur])
 		{
 			cout << "-1" << endl;
 			return;
 		}
-		int cnt = l - d[i];
-		for (int j = 1; j <= n; j++)
+		int cnt = d[cur];
+		for (int j = n; j >= 1; j--)
 		{
-			if (!occ[j] && !cnt)
+			if (!pq[j]) 
 			{
-				q[i] = j;
-				occ[j] = true;
+				q[cur] = j;
+				pq[j] = cur;
 				break;
 			}
-			else if (!occ[j]) cnt--;
+			if (pq[j] <= cur || p[pq[j]] <= p[cur]) continue;
+			if (!cnt) 
+			{
+				for (int k = 1; k <= j; k++) q[pq[k]] = k - 1, pq[k - 1] = pq[k];
+				q[cur] = j;
+				pq[j] = cur;
+				break;
+			}
+			cnt--;
 		}
 	}
 	for (int i = 1; i <= n; i++) cout << q[i] << ' ';

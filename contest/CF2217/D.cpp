@@ -177,8 +177,8 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-int a[200001], sa[200002], pa[200001], cp[200001], cs[200001];
-bool f[200001];
+int a[200002];
+bool f[200002];
 void solve()
 {
 	int n, k, p;
@@ -186,76 +186,15 @@ void solve()
 	for (int i = 1; i <= n; i++) cin >> a[i], f[i] = false;
 	int g = 0;
 	for (int i = 1; i <= k; i++) cin >> p, f[p] = true, g = a[p];
-	pa[0] = sa[n + 1] = cp[0] = cs[n + 1] = 0;
-	int lb = 0, rb = 0;
-	bool found = false;
-	int cur = 0;
-	for (int i = 1; i <= n; i++)
+	a[0] = a[n + 1] = g;
+	f[0] = f[n + 1] = true;
+	int cur = 0, sum = 0, mc = 0;
+	for (int i = 0; i <= n + 1; i++)
 	{
-		pa[i] = pa[i - 1];
-		cp[i] = cp[i - 1];
-		if (f[i]) 
-		{
-			if (cp[i] % 2) pa[i]++, cp[i]++;
-			if (!found) found = true, lb = i;
-			cur = cp[i];
-		}
-		else
-		{
-			if (!cp[i]) 
-			{
-				if (a[i] != g) pa[i]++, cp[i]++;
-			}
-			else
-			{
-				if ((a[i] ^ (cp[i] % 2)) != g)
-				{
-					if (cur) cur--, cp[i]--;
-					else pa[i]++, cp[i]++;
-				}
-			}
-		}
+		if (f[i]) mc = max(mc, cur), sum += cur, cur = 0;
+		if (i <= n && a[i] != a[i + 1]) cur++;
 	}
-	found = false;
-	cur = 0;
-	for (int i = n; i >= 1; i--)
-	{
-		sa[i] = sa[i + 1];
-		cs[i] = cs[i + 1];
-		if (f[i])
-		{
-			if (cs[i] % 2) sa[i]++, cs[i]++;
-			if (!found) found = true, rb = i;
-			cur = cs[i];
-		}
-		else
-		{
-			if (!cs[i]) 
-			{
-				if (a[i] != g) sa[i]++, cs[i]++;
-			}
-			else
-			{
-				if ((a[i] ^ (cs[i] % 2)) != g) 
-				{
-					if (cur) cur--, cs[i]--;
-					else sa[i]++, cs[i]++;
-				}
-			}
-		}
-	}
-	int ans = 1e9;
-	for (int i = lb; i <= rb; i++) 
-	{
-		cerr << i << ' ' << pa[i] << ' ' << cp[i] << ' ' << sa[i] << ' ' << cs[i] << endl;
-		if (f[i])
-		{
-			int cur = cp[i] + cs[i] - min(cp[i], cs[i]);
-			if (cur % 2) ans = min(pa[i] + sa[i] - min(cp[i], cs[i]) + 1, ans); 
-			else ans = min(pa[i] + sa[i] - min(cp[i], cs[i]), ans);
-		}
-	}
-	cout << ans << endl;
+	cout << max((sum + 1) / 2, mc) << endl;
 	return;
 }
 
