@@ -204,7 +204,7 @@ ll solve(ll x, ll xb, ll alr)
 		for (int b = xb; b >= 0; b--) all += cnt[b];
 		return qpow(2ll, all, mod);
 	}
-	if (xb < 0) return 1;
+	if (xb < 0) return 0;
 	ll mx = 0, calr = alr;
 	for (int b = xb; b >= 0; b--)
 	{
@@ -213,25 +213,7 @@ ll solve(ll x, ll xb, ll alr)
 		calr += cnt[b];
 	}
 	if (mx < x) return 0;
-	ll ans = 0, fb = -1;
-	for (int b = xb; b >= alr; b--)
-	{
-		if ((1ll << (b - alr)) < x) 
-		{
-			fb = b;
-			break;
-		}
-	}
-	if (fb > -1)
-	{
-		for (int i = 0; i <= cnt[fb]; i++)
-		{
-			ll ch = calc(fb, i, alr);
-			ans += binom(cnt[fb], i) * solve(x - ch, fb - 1, alr + i) % mod;
-			// cerr << fb << ' ' << i << ' ' << ans << endl;
-			ans %= mod;
-		}
-	}
+	ll ans = 0;
 	ll cc = 0;
 	for (int b = 0; b <= xb; b++)
 	{
@@ -241,6 +223,44 @@ ll solve(ll x, ll xb, ll alr)
 			ans %= mod;
 		}
 		cc += cnt[b];
+	}
+	ll fb = -1;
+	for (int b = xb; b >= alr; b--)
+	{
+		if ((1ll << (b - alr)) < x) 
+		{
+			fb = b;
+			break;
+		}
+	}
+	if (fb == -1 || cnt[fb] == 0) return ans; // fb == -1 break hack #50
+	else
+	{
+		ll ca = calc(fb, cnt[fb], alr);
+		if (ca < x)
+		{
+			ans += solve(x - ca, fb - 1, alr + cnt[fb]);
+			ans %= mod;
+		}
+		else
+		{
+			int l = 2, r = cnt[fb], need = 2;
+			while (l <= r)
+			{
+				int mid = (l + r) >> 1;
+				ll ch = calc(fb, mid, alr);
+				if (ch >= x) r = mid - 1, need = mid;
+				else l = mid + 1;
+			}
+			ll ch1 = calc(fb, need - 1, alr);
+			ans += binom(cnt[fb], need - 1) * solve(x - ch1, fb - 1, alr + need - 1) % mod;
+			ans %= mod;
+			ll ch2 = calc(fb, need, alr);
+			ll mult = qpow(2ll, (ll)cnt[fb], mod); // make this subtraction since need is small (<= 60)
+			for (int i = 0; i < need; i++) mult = (mult - binom(cnt[fb], i) + mod) % mod;
+			ans += mult * solve(x - ch2, fb - 1, alr + need) % mod;
+			ans %= mod;
+		}
 	}
 	return ans;
 }
