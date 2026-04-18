@@ -269,7 +269,7 @@ void solve()
 			{
 				if (curl != k)
 				{
-					if (ans || cur != las || cur > 2 * k || curl % k != k - llen)
+					if (ans || cur != las || curl > 2 * k || curl % k != k - llen) // cur -> curl for the 3rd condition
 					{
 						cout << -1 << endl;
 						return;
