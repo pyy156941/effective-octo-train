@@ -187,6 +187,7 @@ ll calc(ll p, ll c, ll alr)
 
 int cnt[61];
 ll fact[600001], invf[600001];
+ll p2[600001];
 constexpr ll mod = 998244353;
 
 ll binom(ll n, ll m)
@@ -202,7 +203,7 @@ ll solve(ll x, ll xb, ll alr)
 	{
 		ll all = 0;
 		for (int b = xb; b >= 0; b--) all += cnt[b];
-		return qpow(2ll, all, mod);
+		return p2[all];
 	}
 	if (xb < 0) return 0;
 	ll mx = 0, calr = alr;
@@ -219,7 +220,7 @@ ll solve(ll x, ll xb, ll alr)
 	{
 		if (cnt[b] && b >= alr && (1ll << (b - alr)) >= x)
 		{
-			ans += qpow(2ll, cc, mod) * ((qpow(2ll, (ll)cnt[b], mod) + mod - 1) % mod) % mod;
+			ans += p2[cc] * ((p2[cnt[b]] + mod - 1) % mod) % mod;
 			ans %= mod;
 		}
 		cc += cnt[b];
@@ -256,7 +257,7 @@ ll solve(ll x, ll xb, ll alr)
 			ans += binom(cnt[fb], need - 1) * solve(x - ch1, fb - 1, alr + need - 1) % mod;
 			ans %= mod;
 			ll ch2 = calc(fb, need, alr);
-			ll mult = qpow(2ll, (ll)cnt[fb], mod); // make this subtraction since need is small (<= 60)
+			ll mult = p2[cnt[fb]]; // make this subtraction since need is small (<= 60)
 			for (int i = 0; i < need; i++) mult = (mult - binom(cnt[fb], i) + mod) % mod;
 			ans += mult * solve(x - ch2, fb - 1, alr + need) % mod;
 			ans %= mod;
@@ -271,7 +272,9 @@ void solve()
 	cin >> n >> m;
 	fact[0] = fact[1] = 1;
 	invf[0] = invf[1] = 1;
+	p2[0] = 1;
 	for (int i = 1; i <= n + m; i++) fact[i] = (fact[i - 1] * (ll)i) % mod, invf[i] = mod_inv(fact[i], mod);
+	for (int i = 1; i <= n + m; i++) p2[i] = (p2[i - 1] * 2ll) % mod;
 	for (int i = 0; i <= 60; i++) cnt[i] = 0;
 	for (int i = 1; i <= n; i++) cin >> c, cnt[c]++;
 	int mode;
