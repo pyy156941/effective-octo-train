@@ -182,39 +182,35 @@ void solve()
 {
 	int n, r;
 	cin >> n >> r;
-	ll ax = 0, ay = 0;
 	int bound = 0;
+	for (int i = 1; i <= n; i++) cin >> x[i] >> y[i];
+	// bound = 100000, r = 1000, n = 10000;
+	// random_device rd;
+	// mt19937 rng(rd());
+	// for (int i = 1; i <= n; i++) x[i] = (rng() % 200001) - 100000, y[i] = (rng() % 200001) - 100000;
 	for (int i = 1; i <= n; i++)
 	{
-		cin >> x[i] >> y[i];
-		ax += (ll)x[i];
-		ay += (ll)y[i];
-	}
-	ax /= (ll)n, ay /= (ll)n;
-	for (int i = 1; i <= n; i++)
-	{
-		x[i] -= ax, y[i] -= ay;
 		bound = max(bound, abs(x[i]));
 		bound = max(bound, abs(y[i]));
 	}
-	int sr = ceil(1.732 * r) + 10;
+	int sr = ceil(sqrt(3.0 * r * r));
 	vector <pair <int, int>> ans;
 	ans.pb({0, 0});
 	for (int i = 1; ; i += 2)
 	{
-		if (r * i < bound * 0.9) ans.pb({0, r * i + r}), ans.pb({0, -r * i - r});
+		if (r * i < bound) ans.pb({0, r * i + r}), ans.pb({0, -r * i - r});
 		else break;
 	}
 	for (int i = 1; ; i++)
 	{
-		if (sr * i < bound * 0.9) 
+		if (sr * i - r < bound) 
 		{
 			int cx = sr * i;
 			if (i % 2)
 			{
 				for (int j = 0; ; j += 2)
 				{
-					if (r * j < bound * 0.9) 
+					if (r * j < bound) 
 					{
 						ans.pb({cx, r * j + r}), ans.pb({cx, -r * j - r});
 						ans.pb({-cx, r * j + r}), ans.pb({-cx, -r * j - r});
@@ -227,7 +223,7 @@ void solve()
 				ans.pb({cx, 0}), ans.pb({-cx, 0});
 				for (int j = 1; ; j += 2)
 				{
-					if (r * j < bound * 0.9) 
+					if (r * j < bound) 
 					{
 						ans.pb({cx, r * j + r}), ans.pb({cx, -r * j - r});
 						ans.pb({-cx, r * j + r}), ans.pb({-cx, -r * j - r});
@@ -238,8 +234,36 @@ void solve()
 		}
 		else break;
 	}
-	cout << min((int)ans.size(), n) << endl;
-	for (int i = 0; i < min((int)ans.size(), n); i++) cout << ans[i].first + ax << ' ' << ans[i].second + ay << endl;
+	vector <pair <int, int>> c1, op;
+	int cnt = 0, pc = 0;
+	for (auto [cx, cy] : ans)
+	{
+		int cc = 0;
+		for (int i = 1; i <= n; i++) 
+		{
+			if ((ll)(cx - x[i]) * (cx - x[i]) + (ll)(cy - y[i]) * (cy - y[i]) <= (ll)r * r) cc++;
+		}
+		// cerr << cx << ' ' << cy << ' ' << cc << endl;
+		if (cc >= 2) 
+		{
+			if (pc < n)
+			{
+				op.pb({cx, cy});
+				cnt += cc;
+				pc++;
+			}
+			else break;
+		}
+		else if (cc == 1) c1.pb({cx, cy});
+	}
+	// cerr << pc << ' ' << c1.size() << endl;
+	for (auto [cx, cy] : c1)
+	{
+		if (op.size() < n) op.pb({cx, cy}), cnt++;
+	} 
+	// cerr << cnt << endl;
+	cout << op.size() << endl;
+	for (auto [cx, cy] : op) cout << cx << ' ' << cy << endl;
 	return;
 }
 
