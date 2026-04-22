@@ -177,15 +177,85 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-int bs = 0;
-vector <pair <int, pair <int, int>> bt;
 int a[150001];
+ll ps[150001];
+
+int get_fl(int l, int r, int las, ll x)
+{
+	if (ps[l] - ps[l - 1] >= x) return 1;
+	int p = 0; // exp search 
+	for (int i = 1; (1 << i) <= (r - l + 1 - las); i++) // search increment from last length (las)
+	{
+		int cur = 1 << i;
+		if (ps[l + cur + las - 1] - ps[l - 1] >= x) break;
+		p = i;
+	}
+	int lb = (1 << p), rb = min(lb << 1, r - l + 1 - las), res = 0;
+	while (lb <= rb)
+	{
+		int mid = (lb + rb) >> 1;
+		if (ps[l + mid + las - 1] - ps[l - 1] >= x) rb = mid - 1, res = mid;
+		else lb = mid + 1;
+	}
+	return res + las;
+}
+
+bool check_lens(int l, int fl, int t, ll x)
+{
+	ll sum = ps[l + fl * t - 1] - ps[l + fl * (t - 1) - 1];
+	return sum >= x;
+}
+
+int get_flen(int l, int r, int fl, ll x)
+{
+	int p = 0;
+	for (int i = 1; (ll)fl * (1 << i) <= (r - l + 1); i++)
+	{
+		int cur = 1 << i;
+		if (!check_lens(l, fl, cur, x)) break;
+		p = i;
+	}
+	int lb = (1 << p), rb = min(lb << 1, (r - l + 1) / fl), res = 0;
+	while (lb <= rb) 
+	{
+		int mid = (lb + rb) >> 1;
+		if (!check_lens(l, fl, mid, x)) rb = mid - 1;
+		else lb = mid + 1, res = mid;
+	}
+	return res;
+}
 
 void solve()
 {
 	int n, q;
 	cin >> n >> q;
-	
+	for (int i = 1; i <= n; i++)
+	{
+		cin >> a[i];
+		ps[i] = ps[i - 1] + (ll)a[i];
+	}
+	int l, r;
+	ll x;
+	for (int i = 1; i <= q; i++)
+	{
+		cin >> l >> r >> x;
+		int cnt = 0, las = 0;
+		while (1)
+		{
+			if (ps[r] - ps[l - 1] < x)
+			{
+				cout << cnt << ' ' << ps[r] - ps[l - 1] << endl;
+				break;
+			}
+			int curl = get_fl(l, r, las, x);
+			int clen = get_flen(l, r, curl, x);
+			// cerr << l << ' ' << r << ' ' << curl << ' ' << clen << endl;
+			cnt += clen;
+			l += curl * clen;
+			las = curl;
+		}
+	}
+	return;
 }
 
 int main()
