@@ -177,9 +177,89 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
+constexpr int bias = 200000;
+
+pair <int, int> p[200001];
+set <int> difv[400001], sumv[400001];
+map <pair <int, int>, int> rmap;
+int dif[200001], sum[200001];
 void solve()
 {
-	
+	int n, d;
+	cin >> n >> d;
+	rmap.clear();
+	for (int i = 1; i <= n; i++) 
+	{
+		cin >> p[i].first >> p[i].second;
+		dif[i] = p[i].second - p[i].first;
+		sum[i] = p[i].first + p[i].second;
+		difv[dif[i] + bias].insert(p[i].first);
+		sumv[sum[i] + bias].insert(p[i].first);
+		rmap[p[i]] = i;
+	}
+	bool ans = false;
+	for (int i = 1; i <= n; i++)
+	{
+		int x = p[i].first, y = p[i].second;
+		if (difv[dif[i] + bias].find(x + d / 2) != difv[dif[i] + bias].end())
+		{
+			if (dif[i] + d <= bias)
+			{
+				auto it = difv[dif[i] + d + bias].lower_bound(x - d / 2);
+				if (it != difv[dif[i] + d + bias].end() && (*it) <= x)
+				{
+					int im = rmap[{x + d / 2, y + d / 2}];
+					int fm = rmap[{*it, *it + dif[i] + d}];
+					cout << i << ' ' << im << ' ' << fm << endl;
+					ans = true;
+					break;
+				}
+ 			}
+			if (dif[i] - d >= -bias)
+			{
+				auto it = difv[dif[i] - d + bias].lower_bound(x + d / 2);
+				if (it != difv[dif[i] - d + bias].end() && (*it) <= x + d)
+				{
+					int im = rmap[{x + d / 2, y + d / 2}];
+					int fm = rmap[{*it, *it + dif[i] - d}];
+					cout << i << ' ' << im << ' ' << fm << endl;
+					ans = true;
+					break;
+				}
+			}
+		}
+		if (sumv[sum[i] + bias].find(x + d / 2) != sumv[sum[i] + bias].end())
+		{
+			if (sum[i] + d <= bias)
+			{
+				auto it = sumv[sum[i] + d + bias].lower_bound(x + d / 2);
+				if (it != sumv[sum[i] + d + bias].end() && (*it) <= x + d)
+				{
+					int im = rmap[{x + d / 2, y - d / 2}];
+					int fm = rmap[{*it, sum[i] + d - *it}];
+					cout << i << ' ' << im << ' ' << fm << endl;
+					ans = true;
+					break;
+				}
+			}
+			if (sum[i] - d >= -bias)
+			{
+				auto it = sumv[sum[i] - d + bias].lower_bound(x - d / 2);
+				if (it != sumv[sum[i] - d + bias].end() && (*it) <= x)
+				{
+					int im = rmap[{x + d / 2, y - d / 2}];
+					int fm = rmap[{*it, sum[i] - d - *it}];
+					cout << i << ' ' << im << ' ' << fm << endl;
+					ans = true;
+					break;
+				}
+			}
+		}
+	}
+	if (!ans) cout << "0 0 0" << endl;
+	for (int i = 1; i <= n; i++) difv[dif[i] + bias].clear();
+	for (int i = 1; i <= n; i++) sumv[sum[i] + bias].clear();
+	return;
 }
 
 int main()
