@@ -193,7 +193,6 @@ void init()
 }
 
 int a[1000001], na[2000001];
-vector <int> lis[1000001];
 
 int fa[2000001];
 void clear(int n)
@@ -214,6 +213,7 @@ void merge(int x, int y)
 	fa[fx] = fy;
 }
 
+vector <int> up[80001], ups;
 void solve()
 {
 	int n, k;
@@ -222,9 +222,41 @@ void solve()
 	for (int i = 1; i <= n; i++) na[i] = a[n - i + 1];
 	for (int i = 1; i < n; i++) na[i + n] = a[n - i + 1];
 	clear(n + n - 1);
-	for (int i = 1; i < n + n; i++) lis[na[i]].pb(i);
-	for (int i = 1; i <= )
-	for (int i = 1; i < n + n; i++) lis[na[i]].clear();
+	ups.clear();
+	for (int i = 1; i < n + n; i++)
+	{
+		int tmp = na[i];
+		for (auto it : ps)
+		{
+			if (it > 1000 || tmp == 1) break;
+			if (tmp % it) continue;
+			up[cp[it]].pb(i);
+			ups.pb(it);
+			while (tmp % it == 0) tmp /= it;
+		}
+		if (tmp > 1) up[cp[tmp]].pb(i), ups.pb(tmp);
+	}
+	sort(ups.begin(), ups.end());
+	ups.erase(unique(ups.begin(), ups.end()), ups.end());
+	for (auto p : ups)
+	{
+		sort(up[cp[p]].begin(), up[cp[p]].end());
+		int las = 0;
+		// cerr << p << endl;
+		for (auto it : up[cp[p]])
+		{
+			if (las && it - las <= k) merge(it, las);
+			// cerr << it << ' ';
+			las = it;
+		}
+		up[cp[p]].clear();
+		// cerr << endl;
+	}
+	ll ans = 0;
+	for (int i = 1; i <= n; i++) if (na[i] == 1) ans += (ll)(i - 1);
+	for (int i = n + 1; i < n + n; i++) if (na[i] == 1) ans += (ll)(n + n - i - 1);
+	for (int i = 1; i < n + n; i++) if (fa[i] == i) ans++;
+	cout << ans << endl;
 	return;
 }
 
