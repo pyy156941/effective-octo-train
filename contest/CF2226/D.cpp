@@ -178,22 +178,58 @@ T qpow(T a, T b, T mod)
 bool multi_test = true;
 
 int a[200001];
-vector <int> p[200001];
 void solve()
 {
 	int n;
 	cin >> n;
-	int mx = 0, mn = 1e9;
-	for (int i = 1; i <= n; i++) p[i].clear();
-	for (int i = 1; i <= n; i++) cin >> a[i], mx = max(mx, a[i]), mn = min(mn, a[i]), p[a[i]].pb(i);
-	if ((mx + mn) % 2)
+	int mxo = 0, mno = 1e9, mxe = 0, mne = 1e9;
+	bool ho = false, he = false;
+	for (int i = 1; i <= n; i++)
 	{
-		cout << "YES\n";
-		return;
+		cin >> a[i];
+		if (a[i] % 2) 
+		{
+			ho = true;
+			mxo = max(mxo, a[i]);
+			mno = min(mno, a[i]);
+		}
+		else
+		{
+			he = true;
+			mxe = max(mxe, a[i]);
+			mne = min(mne, a[i]);
+		}
+	} 
+	int cmxo = 0, cmxe = 0;
+	for (int i = 1; i <= n; i++)
+	{
+		if (a[i] % 2)
+		{
+			if (cmxo > a[i]) // including a[i] being first odd number, cmxo = 0
+			{
+				if (!he || (mne > a[i] && mxe < cmxo))
+				{
+					cout << "NO" << endl;
+					return;
+				} 
+			} 
+			cmxo = max(cmxo, a[i]);
+		}
+		else
+		{
+			if (cmxe > a[i])
+			{
+				if (!ho || (mno > a[i] && mxo < cmxe))
+				{
+					cout << "NO" << endl;
+					return;
+				}
+			}
+			cmxe = max(cmxe, a[i]);
+		}
 	}
-	
-	
-		
+	cout << "YES" << endl;
+	return;
 }
 
 int main()
