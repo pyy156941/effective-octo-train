@@ -175,11 +175,110 @@ T qpow(T a, T b, T mod)
 	return ans;
 }
 
-bool multi_test = false;
+bool multi_test = true;
+
+constexpr ll bound = 1000000000000000000;
+
+int fa[500001], d[500001];
+vector <int> son[500001];
+
+ll l[500001], dis[500001], m[500001], r[500001];
+bool e[500001]; // m exceeds 1e18
+int to[500001]; // lowest vertex must go to
+
+void dfs(int cur)
+{
+	if (!d[cur]) return;
+	for (auto it : son[cur]) dis[it] = dis[cur] + l[it];
+	if (e[cur])
+	{
+		int nxt = son[cur][r[cur] % d[cur]];
+		r[nxt] = r[cur] + l[nxt];
+		e[nxt] = true;
+		dfs(nxt);
+		to[cur] = to[nxt];
+		return;
+	}
+	if (m[cur] % d[cur] == 0)
+	{
+		int nxt = son[cur][r[cur] % d[cur]];
+		r[nxt] = (r[cur] + l[nxt]) % m[cur];
+		m[nxt] = m[cur];
+		dfs(nxt);
+		to[cur] = to[nxt];
+		return;
+	}
+	ll g = gcd(m[cur], (ll)d[cur]);
+	i128 m_nxt = (i128)m[cur] * d[cur] / g;
+	if (m_nxt > bound)
+	{
+		for (auto it : son[cur]) e[it] = true; 
+		for (int i = 0; i < d[cur] / g; i++)
+		{
+			ll nr = m[cur] * i + r[cur];
+			if (nr > bound) break;
+			int nxt = son[cur][nr % d[cur]];
+			r[nxt] = nr + l[nxt];
+			dfs(nxt);
+		}
+	}
+	else
+	{
+		for (auto it : son[cur]) m[it] = m_nxt;
+		for (int i = 0; i < d[cur] / g; i++)
+		{
+			ll nr = m[cur] * i + r[cur];
+			if (nr > bound) break;
+			int nxt = son[cur][nr % d[cur]];
+			r[nxt] = (nr + l[nxt]) % m[nxt];
+			dfs(nxt);
+		}
+	}
+}
+
+int query(ll x)
+{
+	int cur = 1;
+	ll cx = 0;
+	while (d[cur])
+	{
+		cur = to[cur];
+		if (!d[cur]) break;
+		cx = x + dis[cur];
+		cur = son[cur][cx % d[cur]];
+	}
+	return cur;
+}
 
 void solve()
 {
-	
+	int n, q;
+	cin >> n >> q;
+	for (int i = 1; i <= n; i++)
+	{
+		fa[i] = l[i] = dis[i] = d[i] = m[i] = r[i] = 0;
+		to[i] = i;
+		e[i] = false;
+		son[i].clear();
+	}
+	for (int i = 2; i <= n; i++)
+	{
+		cin >> fa[i];
+		son[fa[i]].pb(i);
+	}
+	for (int i = 1; i <= n; i++) sort(son[i].begin(), son[i].end()), d[i] = son[i].size();
+	for (int i = 2; i <= n; i++) cin >> l[i];
+	m[1] = 1; 
+	dfs(1);
+	ll x;
+	// for (int i = 1; i <= n; i++) cerr << i << ' ' << m[i] << ' ' << r[i] << ' ' << to[i] << endl;
+	for (int i = 1; i <= q; i++) 
+	{
+		cin >> x;
+		cout << query(x) << ' ';
+	}
+	cout << endl;
+	return;
 }
 
 int main()
