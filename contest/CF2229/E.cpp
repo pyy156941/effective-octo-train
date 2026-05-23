@@ -1,0 +1,257 @@
+// Problem: E. Deconstruction Tree
+// Contest: Codeforces - Spectral::Cup 2026 Round 2 (Codeforces Round 1100, Div. 1 + Div. 2)
+// URL: https://codeforces.com/contest/2229/problem/E
+// Memory Limit: 256 MB
+// Time Limit: 2000 ms
+// 
+// Powered by CP Editor (https://cpeditor.org)
+
+#include <bits/stdc++.h>
+#pragma GCC optimize("O3,Ofast,unroll-loops")
+#pragma GCC target("avx2,bmi,bmi2,popcnt,lzcnt")
+
+using namespace std;
+
+#define pb push_back
+#define eb emplace_back
+#define ls(x) x << 1
+#define rs(x) x << 1 | 1
+#define lowbit(x) (x & (-x))
+#define ctz(x) (__builtin_ctz(x))
+#define ppc(x) (__builtin_popcount(x))
+
+using ll = long long;
+using ull = unsigned long long;
+using ui = unsigned int;
+using i128 = __int128;
+
+#define gc() getchar()
+#define pc(x) putchar(x)
+#define isdigit(x) (x >= '0' && x <= '9')
+#define least2p(x) ((x == 1) ? 0 : __lg(x) + ((x & (x - 1)) != 0))
+#define debug(x) cerr << #x << " : " << x << endl;
+
+#define yn(x) \
+do \
+{ \
+    cout << (x ? 'Y' : 'N'); \
+    cout << (x ? 'e' : 'o'); \
+    cout << (x ? 's' : '\n'); \
+    if (!x) cout << '\n'; \
+} while(0)
+
+#define ync(x) \
+do \
+{ \
+    cout << (x ? 'Y' : 'N'); \
+    cout << (x ? 'E' : 'O'); \
+    cout << (x ? 'S' : '\n'); \
+    if (!x) cout << '\n'; \
+} while(0)
+
+#define ynl(x) \
+do \
+{ \
+    cout << (x ? 'y' : 'n'); \
+    cout << (x ? 'e' : 'o'); \
+    cout << (x ? 's' : '\n'); \
+    if (!x) cout << '\n'; \
+} while(0)
+
+istream& operator >> (istream& cin, i128& x)
+{
+    x = 0;
+    int f = 1;
+    char ch;
+    ch = cin.get();
+    while (ch == ' ' || ch == '\n' || ch == '\t') ch = cin.get();
+    if (ch == '-')
+    {
+        f = -1;
+        ch = cin.get();
+    }
+    while (isdigit(ch))
+    {
+        x = x * 10 + (ch - '0');
+        ch = cin.get();
+    }
+    cin.putback(ch);
+    x *= f;
+    return cin;
+}
+
+ostream& operator << (ostream& cout, i128 x)
+{
+    if (x == 0)
+    {
+        cout << '0';
+        return cout;
+    }
+    if (x < 0)
+    {
+        cout << '-';
+        x = -x;
+    }
+    if (x >= 10) cout << (x / 10);
+    cout << (char)('0' + (x % 10));
+    return cout;
+}
+
+template <typename ... Args>
+void multi_read(Args& ... args)
+{
+    ((cin >> args), ...);
+}
+
+template <typename ... Args>
+void multi_write(Args ... args)
+{
+    ((cout << args << " "), ...);
+}
+
+template <typename ... Args>
+void multi_write_endl(Args ... args)
+{
+    ((cout << args << " "), ...);
+    cout << endl;
+}
+
+template <typename T>
+T fastgcd(T a, T b) // unsigned only, requires C++20
+{
+	if (a < b) 
+	{
+		T temp = a;
+		a = b;
+		b = temp;
+	}
+	if (!b) return a;
+	a %= b;
+	if (!a) return b;
+	auto za = ctz(a);
+	auto zb = ctz(b);
+	a >>= za;
+	b >>= zb;
+	do 
+	{
+		T dif = a - b;
+		if (a > b) a = b, b = dif;
+		else b = b - a;
+		b >>= ctz(dif);
+	} while (!b);
+	return a << min(za, zb);
+}
+
+template <typename T>
+void exgcd(T a, T b, T &x, T &y)
+{
+	if (b == 0)
+	{
+		x = 1, y = 0;
+		return;
+	}
+	exgcd(b, a % b, y, x);
+	y -= a / b * x;
+}
+
+template <typename T>
+T mod_inv(T a, T p)
+{
+	T x, y;
+	exgcd(a, p, x, y);
+	return (x + p) % p;
+}
+
+template <typename T>
+T qpow(T a, T b, T mod)
+{
+	T ans = 1;
+	while (b)
+	{
+		if (b & 1) ans = ans * a % mod;
+		a = a * a % mod;
+		b >>= 1;
+	}
+	return ans;
+}
+
+bool multi_test = true;
+
+constexpr ll mod = 998244353;
+
+int fa[200001], req[200001];
+vector <int> adj[200001];
+ll dp[200001], pre[200001];
+
+void dfs(int cur)
+{
+	for (auto it : adj[cur])
+	{
+		if (it == fa[cur]) continue;
+		fa[it] = cur;
+		dfs(it);
+		req[cur] = max(req[cur], max(it, req[it]));
+	}
+}
+
+void solve()
+{
+	int n;
+	cin >> n;
+	for (int i = 1; i <= n; i++)
+	{
+		fa[i] = req[i] = 0;
+		adj[i].clear();
+		dp[i] = pre[i] = 0;
+	}
+	int u, v;
+	for (int i = 1; i < n; i++)
+	{
+		cin >> u >> v;
+		adj[u].pb(v);
+		adj[v].pb(u);
+	}
+	if (adj[n].size() == 1)
+	{
+		cout << 1 << endl;
+		return;
+	}
+	dfs(n);
+	vector <int> sn;
+	for (auto it : adj[n]) sn.pb(max(req[it], it));
+	sort(sn.begin(), sn.end());
+	reverse(sn.begin(), sn.end());
+	req[n] = sn[1];
+	// cerr << req[n] << endl;
+	int st = 2;
+	for (int i = 1; i < n; i++)
+	{
+		if (adj[i].size() == 1) st = i;
+	}
+	dp[st] = pre[st] = 1;
+	for (int i = st + 1; i <= n; i++)
+	{
+		if (req[i] > i) 
+		{
+			dp[i] = 0;
+			pre[i] = pre[i - 1];
+			continue;
+		}
+		dp[i] = (pre[i - 1] - pre[req[i]] + mod) % mod;
+		pre[i] = (pre[i - 1] + dp[i]) % mod;
+	}
+	// for (int i = 1; i < n; i++) cerr << dp[i] << ' ';
+	// cerr << endl;
+	cout << dp[n] << endl;
+	return;
+}
+
+int main()
+{
+	ios :: sync_with_stdio(false);
+	cin.tie(nullptr);
+	int _ = 1;
+	if (multi_test) cin >> _;
+	while (_--) solve();
+	return 0;
+}
