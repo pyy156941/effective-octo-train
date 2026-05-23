@@ -177,48 +177,127 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-int p[300001], pl[300001];
-bool cycle(int i, int j, int k)
+struct bit
 {
-	if (i > j || i > k || p[i] < 3) return false;
-	pl[p[i]] = pl[p[i] - 1];
-	pl[p[i] - 1] = pl[p[i] - 2];
-	pl[p[i] - 2] = i;
-	p[i] -= 2, p[j]++, p[k]++;
-	return true;
-}
+	int n;
+	int tree[300001];
+	
+	void clear(int _n)
+	{
+		n = _n;
+		for (int i = 1; i <= n; i++) tree[i] = 0;
+	}
+	
+	void update(int p, int x)
+	{
+		while (p <= n)
+		{
+			tree[p] += x;
+			p += lowbit(p);
+		}
+	}
+	
+	int query(int p)
+	{
+		int res = 0;
+		while (p)
+		{
+			res += tree[p];
+			p -= lowbit(p);
+		}
+		return res;
+	}
+	
+	int query(int l, int r)
+	{
+		if (l > r) return 0;
+		return query(r) - query(l - 1);
+	}
+}t1;
 
-bool ok[300001];
+struct sgt
+{
+	int n;
+	int tree[1200001];
+	
+	void pushup(int cur)
+	{
+		tree[cur] = min(tree[ls(cur)], tree[rs(cur)]);
+	}
+	
+	void build(int cur, int s, int t)
+	{
+		if (s == t) 
+		{
+			tree[cur] = 1e6;
+			return;
+		}
+		int mid = (s + t) >> 1;
+		build(ls(cur), s, mid);
+		build(rs(cur), mid + 1, t);
+		pushup(cur);
+	}
+	
+	void update(int cur, int s, int t, int p, int x)
+	{
+		if (s == t) 
+		{
+			tree[cur] = x;
+			return;
+		}
+		int mid = (s + t) >> 1;
+		if (p <= mid) update(ls(cur), s, mid, p, x);
+		if (p > mid) update(rs(cur), mid + 1, t, p, x);
+		pushup(cur);
+	}
+	
+	int query(int cur, int l, int r, int s, int t)
+	{
+		if (l <= s && t <= r) return tree[cur];
+		int mid = (s + t) >> 1;
+		int ans = 1e6;
+		if (l <= mid) ans = min(ans, query(ls(cur), l, r, s, mid));
+		if (r > mid) ans = min(ans, query(rs(cur), l, r, mid + 1, t));
+		return ans;
+	}
+	
+	void build(int _n) 
+	{
+		n = _n;
+		build(1, 1, n);
+	}
+	
+	void update(int p, int x) { update(1, 1, n, p, x); }
+	int query(int l, int r) { return query(1, l, r, 1, n); }
+}t2;
+
+int p[300001], ans[300001];
 void solve()
 {
 	int n;
 	cin >> n;
-	for (int i = 1; i <= n; i++) cin >> p[i], pl[p[i]] = i, ok[i] = false;
-	int cmin = 1;
+	for (int i = 1; i <= n; i++) cin >> p[i];
+	t1.clear(n);
+	t2.build(n);
+	for (int i = 1; i <= n; i++) t1.update(p[i], 1), t2.update(p[i], i);
 	for (int i = 1; i <= n; i++)
 	{
-		if (ok[i]) continue;
-		if ((p[i] - cmin) % 2) 
+		int curv = n + 1;
+		while (true)
 		{
-			for (int _ = 1; _ <= n - cmin; _++) 
+			int cur = t2.query(1, curv - 1);
+			curv = p[cur];
+			int rnk = t1.query(1, curv);
+			if (rnk % 2) 
 			{
-				bool got = false;
-				for (int j = cmin; j < n - 1; j++) got |= cycle(pl[j + 2], pl[j], pl[j + 1]);
-				if (!got) break;
+				ans[cur] = i;
+				t1.update(curv, -1);
+				t2.update(curv, 1e6);
+				break;
 			}
-			while (p[i] >= 3 && cycle(i, pl[p[i] - 1], pl[p[i] - 2]));
-			ok[pl[cmin]] = true;
-			ok[i] = true;
-			cmin += 2;
-		}
-		else
-		{
-			while (p[i] >= 3 && cycle(i, pl[p[i] - 1], pl[p[i] - 2]));
-			ok[i] = true;
-			cmin++;	
 		}
 	}
-	for (int i = 1; i <= n; i++) cout << p[i] << ' ';
+	for (int i = 1; i <= n; i++) cout << ans[i] << ' ';
 	cout << endl;
 	return;
 }
