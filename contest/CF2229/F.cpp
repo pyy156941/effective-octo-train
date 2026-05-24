@@ -179,8 +179,7 @@ bool multi_test = true;
 
 int n, k;
 int a[19];
-int dp[200001]; 
-bool ok[200001];
+pair <int, ll> dp[200001]; 
 bool check(ll x)
 {
 	int m = n - 1;
@@ -189,38 +188,18 @@ bool check(ll x)
 	int bound = (1 << m);
 	for (int i = 0; i < bound; i++)
 	{
-		bool no = false;
-		ok[i] = false;
+		dp[i] = {0, 0};
 		for (int j = 0; j < m; j++)
 		{
-			if (i & (1 << j))
-			{
-				if (ok[i ^ (1 << j)]) 
-				{
-					no = true;
-					break;
-				}
-			}
-		}
-		if (no) continue;
-		ll sum = 0;
-		for (int j = 0; j < m; j++)
-		{
-			if (i & (1 << j)) sum += (ll)a[j + 1];
-		}
-		if (sum >= x) ok[i] = true;
-	}
-	for (int i = 0; i < bound; i++)
-	{
-		dp[i] = 0;
-		if (ok[i]) dp[i] = 1;
-		for (int sub = i; sub; sub = (sub - 1) & i)
-		{
-			if (!ok[sub]) continue;
-			dp[i] = max(dp[i], dp[i ^ sub] + 1);
+			if (!(i & (1 << j))) continue;
+			auto [v, res] = dp[i ^ (1 << j)];
+			res += a[j + 1];
+			if (res >= x) v++, res = 0;
+			if (v > dp[i].first) dp[i].first = v, dp[i].second = res;
+			else if (v == dp[i].first) dp[i].second = max(dp[i].second, res);
 		}
 	}
-	if (dp[bound - 1] + ans >= k) return true;
+	if (dp[bound - 1].first + ans >= k) return true;
 	else return false;
 }
 
@@ -235,12 +214,12 @@ void solve()
 		return;
 	}
 	sort(a + 1, a + n + 1);
-	ll r = max(1ll, (sum - a[n]) / k), l = max(1ll, r / 2ll), ans = 0;
-	cerr << l << ' ' << r << endl;
+	ll r = max(1ll, (sum - a[n]) / k), l = a[1], ans = 0;
+	// cerr << l << ' ' << r << endl;
 	while (l <= r)
 	{
 		ll mid = (l + r) >> 1;
-		cerr << mid << endl;
+		// cerr << mid << endl;
 		if (check(mid)) ans = mid, l = mid + 1;
 		else r = mid - 1;
 	}
