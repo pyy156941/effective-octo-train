@@ -178,21 +178,12 @@ T qpow(T a, T b, T mod)
 bool multi_test = true;
 
 int a[21];
-pair <int, pair <int, int>> xp[21];
 vector <pair <int, pair <int, int>>> ans;
 void move(int n, int from, int to, int mid)
 {
 	if (n == 1)
 	{
 		ans.pb({1, {from, to}});
-		for (int i = 1; i <= 20; i++)
-		{
-			if (xp[i].first == n)
-			{
-				ans.pb({i, xp[i].second});
-				xp[i].first = 0;
-			}
-		}
 		return;
 	}
 	int x = n - a[n] - 1;
@@ -201,19 +192,18 @@ void move(int n, int from, int to, int mid)
 		ans.pb({n, {from, to}});
 		move(n - 1, from, to, mid);
 	}
-	else
+	else if (x == n - 1)
 	{
-		xp[n] = {x, {from, to}};
 		move(n - 1, from, mid, to);
+		ans.pb({n, {from, to}});
 		move(n - 1, mid, to, from);
 	}
-	for (int i = 1; i <= 20; i++)
+	else
 	{
-		if (xp[i].first == n)
-		{
-			ans.pb({i, xp[i].second});
-			xp[i].first = 0;
-		}
+		move(x, from, mid, to);
+		ans.pb({n, {from, to}});
+		move(x, mid, from, to);
+		move(n - 1, from, to, mid);
 	}
 }
 
@@ -222,7 +212,6 @@ void solve()
 	int n;
 	cin >> n;
 	ans.clear();
-	for (int i = 1; i <= 20; i++) xp[i] = {0, {0, 0}};
 	for (int i = 1; i <= n; i++) cin >> a[i];
 	for (int i = 1; i <= n; i++)
 	{
@@ -234,10 +223,7 @@ void solve()
 	}
 	move(n, 1, 3, 2);
 	cout << "YES" << endl << ans.size() << endl;
-	for (auto [id, x] : ans)
-	{
-		cout << id << ' ' << x.first << ' ' << x.second << endl;
-	}
+	for (auto [id, x] : ans) cout << id << ' ' << x.first << ' ' << x.second << endl;
 	return;
 }
 
