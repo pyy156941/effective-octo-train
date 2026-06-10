@@ -7,8 +7,8 @@
 // Powered by CP Editor (https://cpeditor.org)
 
 #include <bits/stdc++.h>
-#pragma GCC optimize("O3,Ofast,unroll-loops")
-#pragma GCC target("avx2,bmi,bmi2,popcnt,lzcnt")
+// #pragma GCC optimize("O3,Ofast,unroll-loops")
+// #pragma GCC target("avx2,bmi,bmi2,popcnt,lzcnt")
 
 using namespace std;
 
@@ -175,16 +175,77 @@ T qpow(T a, T b, T mod)
 	return ans;
 }
 
-bool multi_test = true;
+bool multi_test = false;
 
+vector <int> da, db;
+int dp[1345][1345];
+vector <int> das[1345], dbs[1345]; // indices of divisors of divisors of a, b
+vector <int> tra[1345], trb[1345]; // transfer multipliers
+
+int n, a, b;
 void solve()
 {
-	int n, a, b;
+	cin >> n >> a >> b;
 	int g = gcd(a, b);
 	n /= g;
 	a /= g;
 	b /= g;
-	
+	da.clear(), db.clear();
+	for (int i = 1; i * i <= a; i++)
+	{
+		if (a % i) continue;
+		da.pb(i);
+		if (i * i != a) da.pb(a / i);
+	}
+	sort(da.begin(), da.end());
+	for (int i = 1; i * i <= b; i++)
+	{
+		if (b % i) continue;
+		db.pb(i);
+		if (i * i != b) db.pb(b / i);
+	}
+	sort(db.begin(), db.end());
+	for (int i = 0; i < da.size(); i++)
+	{
+		das[i].clear();
+		tra[i].clear();
+		for (int j = 0; j <= i; j++)
+		{
+			if (da[i] % da[j] == 0) das[i].pb(j), tra[i].pb(da[i] / da[j]);
+		}
+	}
+	for (int i = 0; i < db.size(); i++)
+	{
+		dbs[i].clear();
+		trb[i].clear();
+		for (int j = 0; j <= i; j++)
+		{
+			if (db[i] % db[j] == 0) dbs[i].pb(j), trb[i].pb(db[i] / db[j]);
+		}
+	}
+	dp[0][0] = 0;
+	// cerr << da.size() << ' ' << db.size() << endl;
+	for (int i = 0; i < da.size(); i++)
+	{
+		for (int j = 0; j < db.size(); j++)
+		{
+			if (!i && !j) continue;
+			dp[i][j] = 1e9;
+			for (int k = 0; k < das[i].size(); k++)
+			{
+				for (int l = 0; l < dbs[j].size(); l++)
+				{
+					int ri = das[i][k], rj = dbs[j][l];
+					if (ri == i && rj == j) continue;
+					// cerr << i << ' ' << j << ' ' << ri << ' ' << rj << endl;
+					dp[i][j] = min(dp[i][j], dp[ri][rj] + max(tra[i][k], trb[j][l]));
+				}
+			}
+		}
+		// cerr << i << endl;
+	}
+	cout << dp[da.size() - 1][db.size() - 1] << endl;
+	return;
 }
 
 int main()
