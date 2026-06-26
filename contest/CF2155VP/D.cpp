@@ -185,26 +185,17 @@ int query(int u, int v)
 	return r;
 }
 
-random_device rd;
-mt19937 rng(rd());
-vector <pair <int, int>> ch;
 void solve()
 {
 	int n;
 	cin >> n;
-	ch.clear();
-	for (int i = 1; i <= n; i++)
+	for (int d = 1; ; d++)
 	{
-		for (int j = i + 1; j <= n; j++) ch.pb({i, j});
-	}
-	while (true)
-	{
-		int cz = ch.size();
-		int cur = rng() % cz;
-		int r = query(ch[cur].first, ch[cur].second);
-		if (r) return;
-		swap(ch[cur], ch.back());
-		ch.pop_back();
+		for (int i = 1; i <= n; i++)
+		{
+			int v = query(i, (i + d - 1) % n + 1);
+			if (v) return;
+		}
 	}
 	return;
 }
