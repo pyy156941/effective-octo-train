@@ -177,9 +177,56 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
+struct bit
+{
+	int n;
+	int tree[200001];
+	
+	void clear(int _n)
+	{
+		n = _n;
+		for (int i = 1; i <= n; i++) tree[i] = 0;
+	}
+	
+	void update(int p, int x)
+	{
+		while (p <= n)
+		{
+			tree[p] += x;
+			p += lowbit(p);
+		}
+	}
+	
+	int query(int p)
+	{
+		int res = 0;
+		while (p)
+		{
+			res += tree[p];
+			p -= lowbit(p);
+		}
+		return res;
+	}
+	
+	int find(int x) // minimal prefix sum > x
+	{
+		int res = 0;
+		for (int b = __lg(n); b >= 0; b--)
+		{
+			int len = (1 << b);
+			if (res + len > n) continue;
+			if (tree[res + len] <= x)
+			{
+				res += len;
+				x -= tree[res];
+			}
+		}
+		return res + 1;
+	}
+}t1;
+
 int p[200001], tp[200001];
 bool hp[200001];
-int rnk[200001]; // may coincide
 vector <int> ps;
 ll s[200001], st[200001];
 void solve()
@@ -189,12 +236,46 @@ void solve()
 	ll val;
 	cin >> n;
 	ps.clear();
+	ps.pb(0); // border
+	s[0] = 0;
 	for (int i = 1; i <= n; i++)
 	{
 		cin >> mode >> val;
-		if (mode == 'p') p[i] = val, hp[i] = true, s[i] = -1;
+		if (mode == 'p') p[i] = val, hp[i] = true, s[i] = 0;
 		else s[i] = val, p[i] = 0, hp[i] = false, ps.pb(i);
 	}
+	if (ps.size() == 1)
+	{
+		for (int i = 1; i <= n; i++) cout << p[i] << ' ';
+		cout << endl;
+		return;
+	}
+	t1.clear(n);
+	for (int i = 1; i <= n; i++) t1.update(i, 1);
+	for (int i = ps.back() + 1; i <= n; i++) t1.update(p[i], -1);
+	for (int i = ps.size() - 1; i; i--)
+	{
+		int cur = ps[i], pre = ps[i - 1];
+		ll dif = s[cur] - s[pre];
+		for (int j = cur - 1; j > pre; j--) // assuming that p[cur] is very small (like -inf)
+		{
+			dif -= j + 1 - t1.query(p[j]); // total j + 1 numbers left
+			t1.update(p[j], -1);
+		}
+		dif = cur - dif - 1; // change to numbers smaller than p[cur] before index cur
+		// current dif is larger than the actual contribution of p[cur]
+		// by number of p[j] in [pre + 1, cur - 1] that is smaller than actual p[cur]
+		for (int j = cur - 1; j > pre; j--) t1.update(p[j], 2);
+		// for every p[j] in [pre + 1, cur - 1] that is smaller than actual p[cur], it makes dif 1 larger
+		// thus compensate by setting their "occurrence" to 2
+		// cerr << cur << ' ' << pre << ' ' << dif << endl;
+		p[cur] = t1.find(dif);
+		for (int j = cur - 1; j > pre; j--) t1.update(p[j], -2); // revert
+		t1.update(p[cur], -1);
+	}
+	for (int i = 1; i <= n; i++) cout << p[i] << ' ';
+	cout << endl;
+	return;
 }
 
 int main()
