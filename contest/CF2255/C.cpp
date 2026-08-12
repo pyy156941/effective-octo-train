@@ -177,14 +177,72 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
+bool grid[801][801];
 void solve1()
 {
-	
+	int n;
+	cin >> n;
+	string str;
+	for (int i = 0; i < n; i++)
+	{
+		cin >> str;
+		for (int j = 0; j < n; j++) grid[i][j] = (str[j] == '#' ? true : false);
+	}
+	int rx, cx;
+	cin >> rx >> cx;
+	rx--, cx--;
+	int rw = 0, cw = 0, w = 0;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (grid[i][j]) rw += i, cw += j, w++;
+		}
+	}
+	rw %= n, cw %= n;
+	int rt = rx * w % n, ct = cx * w % n;
+	int dr = (rt - rw + n) % n, dc = (ct - cw + n) % n;
+	if (!dr && !dc) 
+	{
+		cout << "1 1 1 1" << endl;
+		return;
+	}
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			int si = (i + dr) % n, sj = (j + dc) % n;
+			if (grid[i][j] && !grid[si][sj]) 
+			{
+				cout << i + 1 << ' ' << j + 1 << ' ' << si + 1 << ' ' << sj + 1 << endl;
+				return;
+			}
+		}
+	}
+	return;
 }
 
 void solve2()
 {
-	
+	int n;
+	cin >> n;
+	string str;
+	for (int i = 0; i < n; i++)
+	{
+		cin >> str;
+		for (int j = 0; j < n; j++) grid[i][j] = (str[j] == '#' ? true : false);
+	}
+	int rw = 0, cw = 0, w = 0;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (grid[i][j]) rw += i, cw += j, w++;
+		}
+	}
+	int iw = mod_inv(w, n);
+	cout << rw % n * iw % n + 1 << ' ' << cw % n * iw % n + 1 << endl;
+	return;
 }
 
 int main()
