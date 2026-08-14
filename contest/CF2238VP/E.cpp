@@ -177,8 +177,10 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
+constexpr int INF = INT_MAX / 2;
+
 int t[501];
-int dp[2][501][501];
+int dp[2][501][501]; // (current place), count of fake, max suffix sum
 void solve()
 {
 	int n;
@@ -190,7 +192,43 @@ void solve()
 		else if (str[i - 1] == 'T') t[i] = 1;
 		else t[i] = 0;
 	}
-	for (int i = 1; i <= n; i++) for (int j = i; j <= n; j++) dp[0][i][j] = dp[1][i][j] = 0;
+	for (int i = 0; i <= n; i++) for (int j = 0; j <= n; j++) dp[0][i][j] = dp[1][i][j] = INF;
+	dp[1][0][0] = 0;
+	int cur = 1;
+	for (int i = 1; i <= n; i++)
+	{
+		cur = 1 - cur;
+		for (int s = 0; s <= i; s++)
+		{
+			for (int ms = 0; ms <= i; ms++) dp[cur][s][ms] = INF; // reset to take min
+			for (int ms = 0; ms <= i; ms++)
+			{
+				if (t[i] != -1) // T or N
+				{
+					int nms = max(0, ms - 1);
+					dp[cur][s][nms] = min(dp[cur][s][nms], dp[1 - cur][s][ms]);
+				}
+				if (t[i] != 1 && s > 0) // F or N
+				{
+					int nms = ms + 1;
+					if (dp[1 - cur][s - 1][ms] == INF) continue;
+					dp[cur][s][nms] = min(dp[cur][s][nms], max(dp[1 - cur][s - 1][ms], nms));
+				}
+			}
+		}
+		// for (int s = 0; s <= i; s++)
+		// {
+			// for (int ms = 0; ms <= i; ms++)
+			// {
+				// cerr << min(dp[cur][s][ms], 15) << ' ';
+			// }
+			// cerr << endl;
+		// }
+	}
+	int ans = 0;
+	for (int s = 0; s <= n; s++) for (int ms = 0; ms <= n; ms++) ans = max(ans, s - dp[cur][s][ms]);
+	cout << ans << endl;
+	return;
 }
 
 int main()
