@@ -177,6 +177,8 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
+int ans[2501][2501];
+bool vis[2501];
 void solve()
 {
 	int n, x;
@@ -196,12 +198,35 @@ void solve()
 		cout << -1 << endl;
 		return;
 	}
+	if (!x)
+	{
+		for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) ans[i][j] = i ^ j;
+	}
+	else
+	{
+		for (int i = 0; i < n; i++) vis[i] = false;
+		vector <pair <int, int>> ps;
+		for (int i = 0; i < n; i++)
+		{
+			if (vis[i ^ x]) continue;
+			ps.pb({i, i ^ x});
+			vis[i] = vis[i ^ x] = true;
+		}
+		vector <int> perm; 
+		for (auto [f, _] : ps) perm.pb(f);
+		for (auto [_, s] : ps) perm.pb(s);
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < n; j++)
+			{
+				ans[i][j] = perm[i] ^ perm[j];
+				if (i % 2 == 0 && j % 2 == 0) ans[i][j] ^= x;
+			}
+		}
+	}
 	for (int i = 0; i < n; i++)
 	{
-		for (int j = 0; j < n; j++)
-		{
-			cout << (i ^ j ^ x) << ' ';
-		}
+		for (int j = 0; j < n; j++) cout << ans[i][j] << ' ';
 		cout << endl;
 	}
 	return;
