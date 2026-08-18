@@ -178,10 +178,8 @@ T qpow(T a, T b, T mod)
 bool multi_test = false;
 
 int n;
-int arr[2001];
-int buc[26];
+int arr[1001];
 bool has[1001], nhas[1001];
-vector <int> pl[26];
 
 int incr(int i)
 {
@@ -205,7 +203,7 @@ void solve()
 {
 	string str;
 	cin >> n >> str;
-	for (int i = 1; i <= n; i++) arr[i] = (str[i - 1] - 'a'), has[i] = true, arr[i + n] = arr[i];
+	for (int i = 1; i <= n; i++) arr[i] = (str[i - 1] - 'a'), has[i] = true;
 	bool allsame = true;
 	for (int i = 1; i <= n; i++)
 	{
@@ -220,23 +218,13 @@ void solve()
 		cout << n << endl << 0 << endl << endl;
 		return;
 	}
-	for (int i = 0; i < 26; i++) for (int j = 1; j <= n; j++) if (arr[j] == i) pl[i].pb(j);
-	int tps = 0;
-	for (int i = 0; i < 26; i++) if (pl[i].size()) tps++;
 	vector <int> ops;
-	for (int _ = 1; _ <= n; _++)
+	for (int i = 1; i <= n; i++)
 	{
-		for (int i = 0; i < 26; i++)
+		for (int j = 1; j <= n; j++)
 		{
-			if (!pl[i].size()) continue;
-			for (int j = 0; j < 26; j++)
-			{
-				if (!pl[j].size() || i == j) continue;
-				simulate(j);
-				simulate(i);
-				ops.pb(j);
-				ops.pb(i);
-			}
+			ops.pb(arr[j]);
+			simulate(arr[j]);
 		}
 	}
 	int ans_k = 0;
