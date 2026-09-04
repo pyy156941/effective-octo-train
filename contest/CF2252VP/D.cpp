@@ -187,7 +187,7 @@ void solve()
 	vector <pair <int, int>> segs;
 	for (int i = 3; i <= n; i++)
 	{
-		if (a[i] % 2 != a[i - 2] % 2) 
+		if ((a[i] % 2 + 2) % 2 != (a[i - 2] % 2 + 2) % 2) 
 		{
 			segs.pb({st, i - 1});
 			st = i - 1;
