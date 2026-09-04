@@ -177,100 +177,72 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-constexpr int thres = 2;
+int a[1048576];
 
-int a[1000000], wc[21];
+struct sgt
+{
+	int mn[4000000], mx[4000000], ans[4000000];
+	
+	void pushup(int cur, int s, int t)
+	{
+		mn[cur] = min(mn[ls(cur)], mn[rs(cur)]);
+		mx[cur] = max(mx[ls(cur)], mx[rs(cur)]);
+		ans[cur] = max(ans[ls(cur)], ans[rs(cur)]);
+		if (mx[ls(cur)] > mn[rs(cur)]) ans[cur] = (t - s + 1) / 2;
+	}
+	
+	void update(int cur, int s, int t, int p, int x)
+	{
+		if (s == t)
+		{
+			mn[cur] = mx[cur] = x;
+			ans[cur] = 0;
+			return;
+		}
+		int mid = (s + t) >> 1;
+		if (p <= mid) update(ls(cur), s, mid, p, x);
+		if (p > mid) update(rs(cur), mid + 1, t, p, x);
+		pushup(cur, s, t);
+	}
+	
+	void build(int cur, int s, int t)
+	{
+		if (s == t) 
+		{
+			mn[cur] = mx[cur] = a[s];
+			ans[cur] = 0;
+			return;
+		}
+		int mid = (s + t) >> 1;
+		build(ls(cur), s, mid);
+		build(rs(cur), mid + 1, t);
+		pushup(cur, s, t);
+	}
+}t;
+
 void solve()
 {
 	int n, q, p, x;
 	cin >> n >> q;
-	for (int i = 0; i < n; i++) cin >> a[i];
-	vector <int> lst[21];
-	vector <multiset <int>> ss[21];
-	for (int i = 0; i < 21; i++)
+	int len = 0;
+	for (int i = 0; i < 21; i++) 
 	{
-		int blk = 1 << i;
-		if (blk > n) break;
-		ss[i].clear();
-		lst[i].clear();
-		for (int l = 0; l < n; l += blk)
+		if ((1 << i) >= n) 
 		{
-			int r = min(l + blk, n);
-			multiset <int> s;
-			int mn = 1e9 + 1, mx = 0;
-			for (int j = l; j < r; j++) 
-			{
-				if (i > thres) s.insert(a[j]);
-				mn = min(mn, a[j]);
-				mx = max(mx, a[j]);
-			}
-			lst[i].pb(mn);
-			lst[i].pb(mx);
-			if (i > thres) ss[i].pb(s);
-		}
-		lst[i].pb(1e9 + 1);
-		wc[i] = 0;
-		for (int j = 1; j < lst[i].size(); j++) if (lst[i][j] < lst[i][j - 1]) wc[i]++;
-	}
-	int ans = 0;
-	for (int i = 20; i >= 0; i--)
-	{
-		if ((1 << i) >= n * 2) continue;
-		if (wc[i])
-		{
-			ans = (1 << i);
+			len = (1 << i) - 1;
 			break;
 		}
 	}
-	cout << ans << endl;
-	for (int _ = 1; _ <= q; _++)
+	for (int i = 0; i < n; i++) cin >> a[i];
+	for (int i = n; i <= len; i++) a[i] = 1e9 + 1;
+	t.build(1, 0, len);
+	cout << t.ans[1] << endl;
+	for (int i = 1; i <= q; i++)
 	{
 		cin >> p >> x;
-		int rap = a[p];
 		a[p] = x;
-		ans = 0;
-		for (int i = 20; i >= 0; i--)
-		{
-			int blk = 1 << i;
-			if (blk > n) continue;
-			int id = p / blk;
-			int l = id * blk;
-			int r = min(l + blk, n);
-			if (id > 0 && lst[i][id * 2] < lst[i][id * 2 - 1]) wc[i]--;
-			if (lst[i][id * 2 + 1] < lst[i][id * 2]) wc[i]--;
-			if (lst[i][id * 2 + 2] < lst[i][id * 2 + 1]) wc[i]--;
-			if (i > thres) 
-			{
-				ss[i][id].erase(ss[i][id].find(rap));
-				ss[i][id].insert(a[p]);
-				lst[i][id * 2] = *ss[i][id].begin();
-				lst[i][id * 2 + 1] = *(--ss[i][id].end());
-			}
-			else
-			{
-				int mn = 1e9 + 1, mx = 0;
-				for (int j = l; j < r; j++) 
-				{
-					mn = min(mn, a[j]);
-					mx = max(mx, a[j]);
-				}
-				lst[i][id * 2] = mn;
-				lst[i][id * 2 + 1] = mx;
-			}
-			if (id > 0 && lst[i][id * 2] < lst[i][id * 2 - 1]) wc[i]++;
-			if (lst[i][id * 2 + 1] < lst[i][id * 2]) wc[i]++;
-			if (lst[i][id * 2 + 2] < lst[i][id * 2 + 1]) wc[i]++;
-		}
-		for (int i = 20; i >= 0; i--)
-		{
-			if ((1 << i) > n) continue;
-			if (wc[i])
-			{
-				ans = (1 << i);
-				break;
-			}
-		}
-		cout << ans << endl;
+		t.update(1, 0, len, p, x);
+		cout << t.ans[1] << endl;
 	}
 	return;
 }
