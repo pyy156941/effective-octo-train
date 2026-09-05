@@ -206,20 +206,12 @@ struct dsu
 }s[3];
 
 map <pair <int, int>, bool> vis23;
+map <pair <int, int>, vector <int>> mem;
 bool vis1[200001];
 
 vector <int> intersect(int f2, int f3)
 {
-	if (vis23.find({f2, f3}) != vis23.end()) return {};
-	vector <int> res;
-	for (int i = 0; i < sl[f3][2].size(); i++)
-	{
-		int cur = sl[f3][2][i];
-		auto it = lower_bound(sl[f2][1].begin(), sl[f2][1].end(), cur);
-		if (it != sl[f2][1].end() && (*it) == cur) res.pb(cur);
-	}
-	vis23[{f2, f3}] = true;
-	return res; 
+	return mem[{f2, f3}];
 }
 
 void solve()
@@ -227,6 +219,7 @@ void solve()
 	int n, m;
 	cin >> n >> m;
 	vis23.clear();
+	mem.clear();
 	for (int i = 1; i <= n; i++) vis1[i] = false, adj[i][0].clear(), adj[i][1].clear(), adj[i][2].clear(), sl[i][0].clear(), sl[i][1].clear(), sl[i][2].clear();
 	s[0].clear(n);
 	s[1].clear(n);
@@ -242,25 +235,56 @@ void solve()
 	for (int i = 1; i <= n; i++) for (int j = 0; j < 3; j++) s[j].fa[i] = s[j].find(i);
 	for (int i = 1; i <= n; i++) for (int j = 0; j < 3; j++) sl[s[j].fa[i]][j].pb(i);
 	for (int i = 1; i <= n; i++) for (int j = 0; j < 3; j++) if (sl[i][j].size()) sort(sl[i][j].begin(), sl[i][j].end());
+	for (int i = 1; i <= n; i++) 
+	{
+		if (sl[i][1].size())
+		{
+			for (auto x : sl[i][1])
+			{
+				int xf3 = s[2].fa[x];
+				mem[{i, xf3}].pb(x);
+			}
+		}
+	}
 	vector <int> n1 = sl[s[0].fa[1]][0];
 	vector <int> n23 = intersect(s[1].fa[1], s[2].fa[1]);
+	vis1[s[0].fa[1]] = true;
+	vis23[{s[1].fa[1], s[2].fa[1]}] = true;
 	vector <int> ans;
-	for (auto x : n1) vis1[s[0].fa[x]] = true, ans.pb(x);
-	for (auto x : n23) vis23[{s[1].fa[x], s[2].fa[x]}] = true, ans.pb(x);
+	for (auto x : n1) ans.pb(x);
+	for (auto x : n23) ans.pb(x);
 	for (int _ = 1; _ < n; _++)
 	{
 		if (!n1.size() && !n23.size()) break;
+		// cerr << n1.size() << ' ' << n23.size() << endl;
 		vector <int> nn23;
 		for (auto x : n1)
 		{
+			if (vis23.find({s[1].fa[x], s[2].fa[x]}) != vis23.end()) continue;
 			vector <int> tmp = intersect(s[1].fa[x], s[2].fa[x]);
+			vis23[{s[1].fa[x], s[2].fa[x]}] = true;
 			for (auto e : tmp) nn23.pb(e);
 		}
 		vector <int> nn1, np1;
 		for (auto x : n23) if (!vis1[s[0].fa[x]]) np1.pb(s[0].fa[x]), vis1[s[0].fa[x]] = true;
 		for (auto p : np1) for (auto x : sl[p][0]) nn1.pb(x);
-		n23 = move(nn23);
-		n1 = move(nn1);
+		vector <int> nn1e, nn23e;
+		sort(nn1.begin(), nn1.end());
+		sort(nn23.begin(), nn23.end());
+		for (auto x : nn23)
+		{
+			auto it = lower_bound(nn1.begin(), nn1.end(), x);
+			if (it != nn1.end() && (*it) == x) ans.pb(x);
+			else nn23e.pb(x);
+		}
+		for (auto x : nn1)
+		{
+			auto it = lower_bound(nn23.begin(), nn23.end(), x);
+			if (it != nn23.end() && (*it) == x) ans.pb(x);
+			else nn1e.pb(x);
+		}
+		n23 = move(nn23e);
+		n1 = move(nn1e);
 		for (auto x : n1) ans.pb(x);
 		for (auto x : n23) ans.pb(x);
 	}
