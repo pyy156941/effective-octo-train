@@ -247,7 +247,7 @@ void solve()
 	// cerr << n << ' ' << m << ' ' << nt.size() << endl;
 	// for (auto [u, v] : nt) cerr << u << ' ' << v << endl;
 	int cross = m - n + 1;
-	for (int mask = 0; mask < (1 << cross); mask++)
+	for (int mask = 1; mask < (1 << cross); mask++) // mask = 0 -> mask = 1 : WA #2 -> WA #17
 	{
 		for (int i = 1; i <= n; i++) cdeg[i] = ec[i] = 0;
 		for (int i = 0; i < cross; i++)
@@ -276,6 +276,7 @@ void solve()
 			adj_t[nt[i].second].pb(nt[i].first);
 		}
 		for (int i = 2; i <= n; i++) if (ec[i] % 2 == 0) adj_t[i].pb(fa[i]), adj_t[fa[i]].pb(i);
+		fa_t[1] = 1; // Addition : WA #17 -> AC
 		dfs_t(1);
 		if (siz[1] == n)
 		{
