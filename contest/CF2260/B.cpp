@@ -182,8 +182,8 @@ void solve()
 	ll x, y, k;
 	cin >> x >> y >> k;
 	ll ans = 0;
-	for (int i = 0; i <= min(k - 1, (ll)1000000); i++) ans += (y + i) % (x + i);
-	ans += (y - x) * max(0ll, k - 1000001);
+	for (int i = 0; i <= min(k - 1, y); i++) ans += (y + i) % (x + i);
+	ans += (y - x) * max(0ll, k - y - 1);
 	cout << ans << endl;
 	return;
 }
