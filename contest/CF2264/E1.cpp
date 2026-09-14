@@ -205,37 +205,56 @@ void init()
 	}
 }
 
-int buc[3001], pre[3001];
+int buc[3001], pre[3001], x[3001][3001];
+vector <int> pf[3001];
 
 constexpr ll mod = 998244353;
 void solve()
 {
 	int n, a;
 	cin >> n;
-	for (int i = 1; i <= n; i++) buc[i] = 0;
+	for (int i = 1; i <= n; i++) 
+	{
+		buc[i] = pre[i] = 0;
+		for (auto p : pr) if (i % p == 0) pf[i].pb(p);
+	}
 	for (int i = 1; i <= n; i++)
 	{
 		cin >> a;
 		buc[a]++;
 	}
 	pre[0] = 0;
-	for (int i = 1; i <= n; i++) pre[i] = pre[i - 1] + max(0, buc[i] - 1);
+	for (int i = 1; i <= n; i++) pre[i] = pre[i - 1] + buc[i];
+	for (int i = 1; i <= n; i++)
+	{
+		x[i][i] = i;
+		for (int j = i + 1; j <= n; j++)
+		{
+			bool ok = false;
+			for (auto p : pf[j]) 
+			{
+				if (i % p) 
+				{
+					ok = true;
+					break;
+				}
+			}
+			if (!ok) x[i][j] = x[i - 1][j - 1];
+			else x[i][j] = x[i][j - 1];
+		}
+	}
 	ll ans = 0;
 	for (int i = 1; i <= n; i++)
 	{
-		vector <int> tmp;
-		for (int j = 1; j < i; j++)
+		for (int j = i; j <= n; j++)
 		{
-			while (tmp.size() && tmc[tmp.back()] < tmc[j]) tmp.pop_back();
-			tmp.pb(j);
-			if (buc[j])
+			ll mult = (qpow(2ll, (ll)buc[j], mod) + mod - 1) % mod;
+			if (j > i)
 			{
-				int p = upper_bound(tmp.begin(), tmp.end(), i, greater <int> ()) - tmp.begin() - 1;
-				int val = tmp[p];
-				cerr << i << ' ' << j << ' ' << val << endl;
-				ans += val * qpow(2ll, (ll)(pre[i] - pre[j - 1]), mod) % mod;
-				ans %= mod;
+				mult = (mult * (qpow(2ll, (ll)buc[i], mod) + mod - 1) % mod) % mod;
+				mult = (mult * qpow(2ll, (ll)pre[j - 1] - pre[i], mod)) % mod;
 			}
+			ans = (ans + x[i][j] * mult % mod) % mod;
 		}
 	}
 	cout << ans << endl;
