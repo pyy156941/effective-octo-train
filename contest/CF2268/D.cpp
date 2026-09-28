@@ -177,42 +177,90 @@ T qpow(T a, T b, T mod)
 
 bool multi_test = true;
 
-int p[1000001], nxt[1000001], cov[1000001];
-bool vis[1000001];
-vector <int> fro[1000001];
+int p[1000001], nxt[1000001], cov[1000001], ljump[1000001], ind[1000001];
 ll ans[1000001];
 
-void dfs(int cur, int r)
+struct bit
 {
-	cov[cur] = max(cov[cur], r);
-	vis[cur] = true;
-	for (auto it : fro[cur]) dfs(it, r);
-}
+	int n;
+	int tree[1000001];
+	
+	void clear(int _n)
+	{
+		n = _n;
+		for (int i = 1; i <= n; i++) tree[i] = 0;
+	}
+	
+	void update(int p, int x)
+	{
+		while (p <= n) 
+		{
+			tree[p] += x;
+			p += lowbit(p);
+		}
+	}
+	
+	int query(int p)
+	{
+		int res = 0;
+		while (p)
+		{
+			res += tree[p];
+			p -= lowbit(p);
+		}
+		return res;
+	}
+}t;
 
 void solve()
 {
 	int n;
 	cin >> n;
-	for (int i = 1; i <= n; i++) cin >> p[i], nxt[i] = ans[i] = cov[i] = 0, fro[i].clear(), vis[i] = false;
+	for (int i = 1; i <= n; i++) cin >> p[i], nxt[i] = ans[i] = cov[i] = ljump[i] = ind[i] = 0;
 	stack <int> S;
 	for (int i = 1; i <= n; i++)
 	{
-		while (!S.empty() && p[S.top()] < p[i]) nxt[S.top()] = i, fro[i].pb(S.top()), S.pop();
+		while (!S.empty() && p[S.top()] < p[i]) nxt[S.top()] = i, S.pop();
 		S.push(i);
 	}
-	for (int i = n; i >= 1; i--) if (!vis[i]) dfs(i, i); 
-	// for (int i = 1; i <= n; i++) cerr << nxt[i] << ' ';
-	// cerr << endl;
-	ll fans = (ll)n * (n - 1) / 2;
-	int rmp = 0;
-	for (int i = 1; i <= n; i++)
+	for (int i = n; i >= 1; i--)
 	{
-		rmp = max(rmp, cov[i]);
-		ans[i] = (rmp - i) * 3ll;
-		if (nxt[nxt[i]]) ans[i]--;
-		if (nxt[i]) ans[i] -= (ll)(nxt[i] - i) + 1; 
-		fans += ans[i];
+		if (nxt[i]) cov[i] = cov[nxt[i]];
+		else cov[i] = i;
+	} 
+	ll fans = (ll)n * (n - 1) / 2;
+	for (int i = 1; i < n; i++) ljump[i + 1] = max(ljump[i], nxt[i]); // ljump[i + 1] -> ljump[i]
+	t.clear(n);
+	for (int i = 1; i <= n; i++) if (nxt[i]) ind[nxt[i]]++;
+	for (int i = 1; i <= n; i++) if (ind[i]) t.update(i, 1);
+	for (int i = n; i >= 1; i--)
+	{
+		if (nxt[i]) 
+		{
+			ind[nxt[i]]--;
+			if (!ind[nxt[i]]) t.update(nxt[i], -1);
+		}
+		else continue;
+		int j2 = max(max(nxt[nxt[i]], ljump[i]), nxt[i]);
+		// cerr << i << ' ' << nxt[nxt[i]] << ' ' << ljump[i] << endl;
+		if (j2 > nxt[i]) 
+		{
+			ans[i] = ans[j2] + (ll)(cov[j2] - j2 + 1) * 2 + (ll)(j2 - i - 1) * 3;
+			ans[i] -= 2;
+			ans[i] -= (ll)(nxt[i] - i - 1);
+			if (nxt[nxt[i]] && j2 > nxt[nxt[i]])
+			{
+				ans[i] -= t.query(j2 - 1) - t.query(nxt[nxt[i]] - 1);
+				if (!ind[nxt[nxt[i]]]) ans[i]--;
+			}
+		}
+		else
+		{
+			ans[i] = ans[j2] + (ll)(cov[j2] - j2 + 1);
+			ans[i] += (ll)(j2 - i - 1) * 2;
+		}
 		// cerr << ans[i] << ' ';
+		fans += ans[i];
 	}
 	// cerr << endl;
 	cout << fans << endl;
